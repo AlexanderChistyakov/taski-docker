@@ -1,24 +1,34 @@
-name: Main Taski Workflow
-# Перечень событий-триггеров, при которых должен запускаться workflow
+# .github/workflows/main.yml
+name: Main Taski workflow
+
 on:
-  # Событие push возникает,
-  # когда изменения исходного кода приходят на сервер GitHub
   push:
-    # Отслеживаем изменения только в ветке main
     branches:
       - main
-# Перечень задач
+
 jobs:
-  # Единственная задача — склонировать код 
-  # и вывести в консоль дерево файлов
-  checkout-and-print-tree:
+  tests:
+    # Разворачиваем окружение:
     runs-on: ubuntu-latest
+
     steps:
-      # На GitHub Actions есть готовые описания шагов, 
-      # их можно использовать в своих workflow.
-      # Применим готовое описание шага для получения исходного кода
-      - name: Check out repository code  # Имя шага задаём сами
-        uses: actions/checkout@v3  # Берём готовое решение из библиотеки GitHub Actions
-      # Выполняем команду tree в текущей директории
-      - name: Print project tree
-        run: tree .
+    # Копируем код проекта
+    - name: Check out code
+      uses: actions/checkout@v3
+    # Устанавливаем Python с помощью action
+    - name: Set up Python
+      uses: actions/setup-python@v4
+    # В action setup-python@v4 передаём параметр — версию Python
+      with:
+        python-version: 3.9
+    # Обновляем pip, устанавливаем flake8 и flake8-isort, 
+    # устанавливаем зависимости проекта
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip 
+        pip install flake8==6.0.0 flake8-isort==6.0.0
+    # Запускаем flake8
+    - name: Test with flake8
+      # Вызываем flake8 и указываем ему,
+      # что нужно проверить файлы только в папке backend/
+      run: python -m flake8 backend/
